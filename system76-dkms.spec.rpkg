@@ -50,7 +50,9 @@ sed -i 's/PACKAGE_VERSION="#MODULE_VERSION#"/PACKAGE_VERSION="{{{ git_dir_versio
 
 # do before uninstallation
 %preun
-/usr/bin/env dkms remove -m system76 -v {{{ git_dir_version }}} --all
+%if $(dkms status -m $DKMS_NAME -v $DKMS_VERSION)
+  /usr/bin/env dkms remove -m system76 -v {{{ git_dir_version }}} --all
+%endif
 
 # do after unistallation
 %postun
