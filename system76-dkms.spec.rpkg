@@ -21,7 +21,7 @@ Source:     {{{ git_dir_pack }}}
 
 #Packages required to work
 Requires: dkms
-
+Requires: kernel-devel
 
 # More detailed description of the package
 %description
@@ -47,6 +47,8 @@ install -D -m 0644 usr/share/initramfs-tools/hooks/system76-dkms %{buildroot}%{_
 %post
 sed -i 's/PACKAGE_VERSION="#MODULE_VERSION#"/PACKAGE_VERSION="{{{ git_dir_version }}}"/g' %{_usrsrc}/system76-{{{ git_dir_version }}}/dkms.conf
 /usr/bin/env dkms add -m system76 -v {{{ git_dir_version }}} 
+/usr/bin/env dkms build -m system76 -v {{{ git_dir_version }}}
+/usr/bin/env dkms install -m system76 -v {{{ git_dir_version }}}
 
 # do before uninstallation
 %preun
