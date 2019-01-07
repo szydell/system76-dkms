@@ -1,0 +1,68 @@
+# The following tag is to get correct syntax highlighting for this file in vim text editor
+# vim: syntax=spec
+
+Name:       {{{ git_dir_name }}}
+Version:    {{{ git_dir_version }}}
+Release:    1%{?dist}
+Summary:    {{{ git_dir_name }}} 
+License:    GPLv3
+URL:        https://github.com/pop-os/system76-dkms
+
+# Detailed information about the source Git repository and the source commit
+# for the created rpm package
+VCS:        {{{ git_dir_vcs }}}
+
+# git_dir_pack macro places the repository content (the source files) into a tarball
+# and returns its filename. The tarball will be used to build the rpm.
+Source:     {{{ git_dir_pack }}}
+
+#Packages required for build
+#BuildRequires: dbus-devel
+
+#Packages required to work
+Requires: dkms
+
+
+# More detailed description of the package
+%description
+System76 DKMS (Dynamic Kernel Module Support)
+-----
+ This DKMS driver provides airplane mode, keyboard backlight, and fan support
+ for System76 laptops
+
+%define debug_package %{nil}
+
+#--
+%prep
+{{{ git_dir_setup_macro }}}
+
+%install
+install -D -m 0644 *.c -t "%{buildroot}%{_usrsrc}/system76-{{{ git_dir_version }}}/"
+install -m 0644 Makefile -t "%{buildroot}%{_usrsrc}/system76-{{{ git_dir_version }}}/"
+install -m 0644 debian/system76-dkms.dkms "%{buildroot}%{_usrsrc}/system76-{{{ git_dir_version }}}/dkms.conf"
+install -D -m 0644 usr/share/initramfs-tools/modules.d/system76-dkms.conf %{buildroot}%{_datarootdir}/initramfs-tools/modules.d/system76-dkms.conf
+install -D -m 0644 usr/share/initramfs-tools/hooks/system76-dkms %{buildroot}%{_datarootdir}/initramfs-tools/hooks/system76-dkms
+
+# do after installation
+%post
+sed -i 's/PACKAGE_VERSION="#MODULE_VERSION#"/PACKAGE_VERSION="{{{ git_dir_version }}}"/g' %{_usrsrc}/system76-{{{ git_dir_version }}}/dkms.conf
+/usr/bin/env dkms add -m system76 -v {{{ git_dir_version }}} 
+
+# do before uninstallation
+%preun
+/usr/bin/env dkms remove -m system76 -v {{{ git_dir_version }}} --all
+
+# do after unistallation
+%postun
+
+# Those files will be in the rpm
+%files
+%{_usrsrc}/system76-{{{ git_dir_version }}}/*
+%{_datarootdir}/initramfs-tools/modules.d/system76-dkms.conf
+%{_datarootdir}/initramfs-tools/hooks/system76-dkms
+
+# Changelog
+%changelog
+{{{ git_dir_changelog }}}
+
+
