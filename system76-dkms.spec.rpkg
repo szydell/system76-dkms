@@ -59,7 +59,8 @@ sed -i 's/MODULE_VERSION("\(.*\)");/MODULE_VERSION("\1-aaasfs");/g' %{_usrsrc}/s
 
 # do after unistallation
 %postun
-rmdir %{_usrsrc}/system76-{{{ git_dir_version }}}
+#added -v to verify why directory is still not deleted
+rmdir -v %{_usrsrc}/system76-{{{ git_dir_version }}}
 
 # Those files will be in the rpm
 %files
