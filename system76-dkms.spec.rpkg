@@ -56,6 +56,7 @@ sed -i 's/PACKAGE_VERSION="#MODULE_VERSION#"/PACKAGE_VERSION="{{{ git_dir_versio
 
 # do after unistallation
 %postun
+rmdir %{_usrsrc}/system76-{{{ git_dir_version }}}
 
 # Those files will be in the rpm
 %files
