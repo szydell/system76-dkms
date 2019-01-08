@@ -47,7 +47,7 @@ install -D -m 0644 usr/share/initramfs-tools/hooks/system76-dkms %{buildroot}%{_
 %post
 sed -i 's/PACKAGE_VERSION="#MODULE_VERSION#"/PACKAGE_VERSION="{{{ git_dir_version }}}"/g' %{_usrsrc}/system76-{{{ git_dir_version }}}/dkms.conf
 # change module id also in C code.
-sed -i 's/MODULE_VERSION("\(.*\)");/MODULE_VERSION("\1-aaasfs");/g' %{_usrsrc}/system76-{{{ git_dir_version }}}/system76.c
+sed -i 's/MODULE_VERSION("\(.*\)");/MODULE_VERSION("\1-{{{ git_dir_version }}}");/g' %{_usrsrc}/system76-{{{ git_dir_version }}}/system76.c
 
 /usr/bin/env dkms add -m system76 -v {{{ git_dir_version }}} 
 /usr/bin/env dkms build -m system76 -v {{{ git_dir_version }}}
@@ -61,6 +61,8 @@ sed -i 's/MODULE_VERSION("\(.*\)");/MODULE_VERSION("\1-aaasfs");/g' %{_usrsrc}/s
 %postun
 #added -v to verify why directory is still not deleted
 rmdir -v %{_usrsrc}/system76-{{{ git_dir_version }}}
+echo "Does it use postun macro at all? rmdir -v %{_usrsrc}/system76-{{{ git_dir_version }}}"
+
 
 # Those files will be in the rpm
 %files
