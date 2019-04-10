@@ -7,7 +7,9 @@ Repository for automated RPM creations.
 
 Want to use system76-dkms on Fedora? Check this COPR -> https://copr.fedorainfracloud.org/coprs/szydell/system76/
 
+Primary repo: https://github.com/szydell/system76-dkms
 Secondary repo: https://pagure.io/system76/system76-dkms
+
 =======
 # system76-dkms
 System76 DKMS driver
