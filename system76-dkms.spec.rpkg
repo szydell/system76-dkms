@@ -58,6 +58,11 @@ sed -i 's/MODULE_VERSION("\(.*\)");/MODULE_VERSION("\1-{{{ git_dir_version }}}")
 /usr/bin/env rmmod system76
 /usr/bin/env dkms remove -m system76 -v {{{ git_dir_version }}} --all --rpm_safe_upgrade
 
+# do after uninstallation, bugfix
+%postun
+rm -rfv /var/lib/dkms/system76/{{{ git_dir_version }}}
+
+
 # Those files will be in the rpm
 %files
 %{_usrsrc}/system76-{{{ git_dir_version }}}
