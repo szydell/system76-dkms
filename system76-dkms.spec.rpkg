@@ -60,8 +60,9 @@ sed -i 's/MODULE_VERSION("\(.*\)");/MODULE_VERSION("\1-{{{ git_dir_version }}}")
 
 # do after uninstallation, bugfix
 %postun
+echo "postun start"
 rm -rfv /var/lib/dkms/system76/{{{ git_dir_version }}}
-
+echo "postun finish"
 
 # Those files will be in the rpm
 %files
