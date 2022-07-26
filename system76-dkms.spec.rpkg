@@ -22,6 +22,7 @@ Source:     {{{ git_dir_pack }}}
 #Packages required to work
 Requires: dkms
 Requires: kernel-devel
+Requires: openssl
 
 # More detailed description of the package
 %description
