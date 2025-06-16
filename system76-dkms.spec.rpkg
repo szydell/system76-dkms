@@ -2,7 +2,7 @@
 # vim: syntax=spec
 
 Name:       {{{ git_dir_name }}}
-Version:    1.0.18
+Version:    1.0.19
 Release:    1
 Summary:    {{{ git_dir_name }}} 
 License:    GPLv3
