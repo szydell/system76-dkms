@@ -1,22 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
  * input.c
  *
  * Copyright (C) 2017 Jeremy Soller <jeremy@system76.com>
  * Copyright (C) 2014-2016 Arnoud Willemsen <mail@lynthium.com>
  * Copyright (C) 2013-2015 TUXEDO Computers GmbH <tux@tuxedocomputers.com>
- *
- * This program is free software;  you can redistribute it and/or modify
- * it under the terms of the  GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or (at
- * your option) any later version.
- *
- * This program is  distributed in the hope that it  will be useful, but
- * WITHOUT  ANY   WARRANTY;  without   even  the  implied   warranty  of
- * MERCHANTABILITY  or FITNESS FOR  A PARTICULAR  PURPOSE.  See  the GNU
- * General Public License for more details.
- *
- * You should  have received  a copy of  the GNU General  Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #define AIRPLANE_KEY KEY_WLAN
@@ -51,13 +39,14 @@ static const struct kernel_param_ops param_ops_poll_freq = {
 
 static unsigned char param_poll_freq = POLL_FREQ_DEFAULT;
 #define param_check_poll_freq param_check_byte
-module_param_named(poll_freq, param_poll_freq, poll_freq, S_IRUSR);
+module_param_named(poll_freq, param_poll_freq, poll_freq, 0400);
 MODULE_PARM_DESC(poll_freq, "Set polling frequency");
 
 static struct task_struct *s76_input_polling_task;
 
-static void s76_input_key(unsigned int code) {
-	S76_DEBUG("Send key %x\n", code);
+static void s76_input_key(unsigned int code)
+{
+	pr_debug("Send key %x\n", code);
 
 	mutex_lock(&s76_input_report_mutex);
 
@@ -70,8 +59,9 @@ static void s76_input_key(unsigned int code) {
 	mutex_unlock(&s76_input_report_mutex);
 }
 
-static int s76_input_polling_thread(void *data) {
-	S76_DEBUG("Polling thread started (PID: %i), polling at %i Hz\n",
+static int s76_input_polling_thread(void *data)
+{
+	pr_debug("Polling thread started (PID: %i), polling at %i Hz\n",
 				current->pid, param_poll_freq);
 
 	while (!kthread_should_stop()) {
@@ -81,7 +71,7 @@ static int s76_input_polling_thread(void *data) {
 		if (byte & 0x40) {
 			ec_write(0xDB, byte & ~0x40);
 
-			S76_DEBUG("Airplane-Mode Hotkey pressed (EC)\n");
+			pr_debug("Airplane-Mode Hotkey pressed (EC)\n");
 
 			s76_input_key(AIRPLANE_KEY);
 		}
@@ -89,24 +79,27 @@ static int s76_input_polling_thread(void *data) {
 		msleep_interruptible(1000 / param_poll_freq);
 	}
 
-	S76_DEBUG("Polling thread exiting\n");
+	pr_debug("Polling thread exiting\n");
 
 	return 0;
 }
 
-static void s76_input_airplane_wmi(void) {
-	S76_DEBUG("Airplane-Mode Hotkey pressed (WMI)\n");
+static void s76_input_airplane_wmi(void)
+{
+	pr_debug("Airplane-Mode Hotkey pressed (WMI)\n");
 
 	s76_input_key(AIRPLANE_KEY);
 }
 
-static void s76_input_screen_wmi(void) {
-	S76_DEBUG("Screen Hotkey pressed (WMI)\n");
+static void s76_input_screen_wmi(void)
+{
+	pr_debug("Screen Hotkey pressed (WMI)\n");
 
 	s76_input_key(SCREEN_KEY);
 }
 
-static int s76_input_open(struct input_dev *dev) {
+static int s76_input_open(struct input_dev *dev)
+{
 	int res = 0;
 
 	// Run polling thread if AP key driver is used and WMI is not supported
@@ -115,10 +108,10 @@ static int s76_input_open(struct input_dev *dev) {
 			s76_input_polling_thread,
 			NULL, "system76-polld");
 
-		if (unlikely(IS_ERR(s76_input_polling_task))) {
+		if (IS_ERR(s76_input_polling_task)) {
 			res = PTR_ERR(s76_input_polling_task);
 			s76_input_polling_task = NULL;
-			S76_ERROR("Could not create polling thread: %d\n", res);
+			pr_err("Could not create polling thread: %d\n", res);
 			return res;
 		}
 	}
@@ -126,8 +119,9 @@ static int s76_input_open(struct input_dev *dev) {
 	return res;
 }
 
-static void s76_input_close(struct input_dev *dev) {
-	if (unlikely(IS_ERR_OR_NULL(s76_input_polling_task))) {
+static void s76_input_close(struct input_dev *dev)
+{
+	if (IS_ERR_OR_NULL(s76_input_polling_task)) {
 		return;
 	}
 
@@ -135,13 +129,14 @@ static void s76_input_close(struct input_dev *dev) {
 	s76_input_polling_task = NULL;
 }
 
-static int __init s76_input_init(struct device *dev) {
+static int __init s76_input_init(struct device *dev)
+{
 	int err;
 	u8 byte;
 
 	s76_input_device = input_allocate_device();
 	if (unlikely(!s76_input_device)) {
-		S76_ERROR("Error allocating input device\n");
+		pr_err("Error allocating input device\n");
 		return -ENOMEM;
 	}
 
@@ -164,7 +159,7 @@ static int __init s76_input_init(struct device *dev) {
 
 	err = input_register_device(s76_input_device);
 	if (unlikely(err)) {
-		S76_ERROR("Error registering input device\n");
+		pr_err("Error registering input device\n");
 		goto err_free_input_device;
 	}
 
@@ -176,7 +171,8 @@ err_free_input_device:
 	return err;
 }
 
-static void __exit s76_input_exit(void) {
+static void __exit s76_input_exit(void)
+{
 	if (unlikely(!s76_input_device)) {
 		return;
 	}
