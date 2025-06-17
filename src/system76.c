@@ -103,7 +103,7 @@ static void s76_wmi_notify(u32 value, void *context)
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 	if (obj->type != ACPI_TYPE_INTEGER) {
-		pr_debug("Unexpected WMI event (%0#6x)\n", obj);
+		pr_debug("Unexpected WMI event (%0#6x)\n", obj->type);
 		return;
 	}
 #else
@@ -234,9 +234,6 @@ static int s76_remove(struct platform_device *dev)
 		s76_hwmon_fini(&dev->dev);
 	}
 	#endif
-	if (driver_flags & DRIVER_INPUT) {
-		s76_input_exit();
-	}
 	if (driver_flags & (DRIVER_KB_LED_WMI | DRIVER_KB_LED)) {
 		kb_led_exit();
 	}
@@ -249,7 +246,7 @@ static int s76_remove(struct platform_device *dev)
 #endif
 }
 
-static int s76_suspend(struct platform_device *dev, pm_message_t status)
+static int s76_suspend(struct device *dev)
 {
 	pr_debug("%s\n", __func__);
 
@@ -260,7 +257,7 @@ static int s76_suspend(struct platform_device *dev, pm_message_t status)
 	return 0;
 }
 
-static int s76_resume(struct platform_device *dev)
+static int s76_resume(struct device *dev)
 {
 	pr_debug("%s\n", __func__);
 
@@ -284,13 +281,22 @@ static int s76_resume(struct platform_device *dev)
 	return 0;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
+static DEFINE_SIMPLE_DEV_PM_OPS(s76_pm, s76_suspend, s76_resume);
+#else
+static SIMPLE_DEV_PM_OPS(s76_pm, s76_suspend, s76_resume);
+#endif
+
 static struct platform_driver s76_platform_driver = {
 	.remove = s76_remove,
-	.suspend = s76_suspend,
-	.resume = s76_resume,
 	.driver = {
 		.name  = S76_DRIVER_NAME,
 		.owner = THIS_MODULE,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0)
+		.pm = pm_sleep_ptr(&s76_pm),
+#else
+		.pm = pm_ptr(&s76_pm),
+#endif
 	},
 };
 
